@@ -33,7 +33,7 @@ class UI:
     
         self._win.mainloop()
         
-
-ui = UI()
+if __name__ == "__main__":
+    ui = UI()
         
 

@@ -14,6 +14,12 @@ class Configuration:
         self._neighbor = neighbor
         self._T = T
         
+    def setCell(self, i, val):
+        self._line[i] = val
+        
+    def getLine(self):
+        return self._line
+        
     def payoff(self, i, j):
         a = self._line[i]
         b = self._line[j]
@@ -53,6 +59,8 @@ class Configuration:
                 ans._line[i] = self._line[imax]
 
         return ans
+    
+    
 
 if __name__ == "__main__":
     #test

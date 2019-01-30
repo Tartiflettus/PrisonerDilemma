@@ -56,9 +56,17 @@ class Configuration:
 
 if __name__ == "__main__":
     #test
-    c = Configuration(8, 3, 0.5)
-    c._line[0] = 1
-    c._line[4] = 1
+    c = Configuration(8, 4, 1.1)
+    for i in range(len(c._line)):
+        c._line[i] = 1
+    c._line[4] = 0
+    c._line[2] = 0
+    
+    print([c.totalPayoff(i) for i in range(len(c._line))])
+    print("")
     print(c._line)
-    c = c.next()
-    print(c._line)
+    for i in range(4):
+        c = c.next()
+        print(c._line)
+    print("")
+    print([c.totalPayoff(i) for i in range(len(c._line))])

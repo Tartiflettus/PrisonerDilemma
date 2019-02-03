@@ -2,10 +2,10 @@
 """
 Created on Wed Jan 23 18:47:39 2019
 
-@author: perso
+@author: Victor
 """
 
-import copy as cp
+# import copy as cp
 
 
 class Configuration:
@@ -13,6 +13,7 @@ class Configuration:
         self._line = [0] * size
         self._neighbor = neighbor
         self._T = T
+        self.currentConfig = [0] * size
         
     def set_cell(self, i, val):
         self._line[i] = val
@@ -29,7 +30,7 @@ class Configuration:
         if self._neighbor % 2 != 0: # continuous range
             ans = list(range(i-self._neighbor//2, 1+i+self._neighbor//2))
         else:
-            ans = list(range(i-self._neighbor//2, i)) + list(range(1 + i , 1 + i + self._neighbor//2))
+            ans = list(range(i-self._neighbor//2, i)) + list(range(1 + i, 1 + i + self._neighbor//2))
         return [x % len(self._line) for x in ans]
 
     def total_payoff(self, i):
@@ -37,10 +38,12 @@ class Configuration:
         return sum([self.payoff(i, j) for j in neighborhood])
 
     def next(self):
+        """
         ans = Configuration(len(self._line), self._neighbor, self._T)
         ans._neighbor = self._neighbor
         ans._T = self._T
         ans._line = cp.copy(self._line)
+        """
         
         payoffs = [self.total_payoff(i) for i in range(len(self._line))]
         # update if payoff > other payoffs
@@ -53,15 +56,14 @@ class Configuration:
                 if payoffs[j] > m:
                     m = payoffs[j]
                     imax = j
-            # update cell state if its payoff is not best
+            # update cell state if its payoff is not the best
             if payoffs[i] < m:
-                ans._line[i] = self._line[imax]
-
-        return ans
+                self._line[i] = self._line[imax]
+        return self
 
 
 if __name__ == "__main__":
-    # test
+    # test set
     c = Configuration(8, 4, 1.1)
     for i in range(len(c._line)):
         c._line[i] = 1

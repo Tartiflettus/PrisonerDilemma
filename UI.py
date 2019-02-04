@@ -4,10 +4,7 @@ Created on Wed Jan 23 17:29:50 2019
 
 @author: Victor
 """
-import pprint
 import tkinter as tk
-from time import time
-
 import PrisonerDilemma as pd
 
 
@@ -25,6 +22,8 @@ class UI:
         self._width = width
         self._height = height
         self._rect_size = rect_size
+        self._grid = []
+        self._can = 0
 
         self.eca = pd.Configuration(width, 2, 1.1)
 
@@ -54,28 +53,41 @@ class UI:
 
         # choose iterations per second
         tk.Label(self.controlsGrid, text="Iterations/s").grid(row=1, column=1)
-        self.iters_per_second = tk.Spinbox(self.controlsGrid, from_=1, to_=100, width=7, command=self.fps_changed)
-        self.iters_per_second.grid(row=1, column=0)
+        self.fps_box = tk.Spinbox(self.controlsGrid, from_=1, to_=100, width=7, command=self.fps_changed)
+        self.fps_box.grid(row=1, column=0)
 
         # iteration number
         tk.Label(self.controlsGrid, text="Iterations").grid(row=2, column=1)
         self.iter_label = tk.Label(self.controlsGrid, text=self.counter)
         self.iter_label.grid(row=2, column=0)
 
-        # init the grid
-        self._grid = [[0 for i in range(width)] for j in range(height)]
+        # choose width
+        tk.Label(self.controlsGrid, text="Width").grid(row=3, column=0)
+        self.chosenWidth = tk.Spinbox(self.controlsGrid, from_=16, to_=1000, width=7, command=self.width_changed)
+        self.chosenWidth.grid(row=3, column=1)
 
-        # create the canvas
-        self._can = tk.Canvas(self._panRight, width=width * rect_size, height=height * rect_size)
+        # choose height
+        tk.Label(self.controlsGrid, text="Width").grid(row=4, column=0)
+        self.chosenHeight = tk.Spinbox(self.controlsGrid, from_=16, to_=1000, width=7, command=self.height_changed)
+        self.chosenHeight.grid(row=4, column=1)
+
+        # init the grid and create the canvas
+        self._grid = [[0 for i in range(self._width)] for j in range(self._height)]
+        self._can = tk.Canvas(self._panRight, width=self._width*self._rect_size, height=self._height*self._rect_size)
         self._can.pack()
+        self.repaint()
 
         # set mouse click to paint rect
         self._can.bind("<B1-Motion>", self.paint)
         self._can.bind("<Button-1>", self.paint)
 
-        self.repaint()
-
         self._win.mainloop()
+
+    def update(self):
+        self._grid = [[0 for i in range(self._width)] for j in range(self._height)]
+        self._can.configure(width=self._width*self._rect_size, height=self._height*self._rect_size)
+        self.repaint(0)
+        self.eca = pd.Configuration(self._width, 2, 1.1)
 
     def paint(self, event):
         x = event.x // self._rect_size
@@ -98,8 +110,8 @@ class UI:
         col = "yellow" if self._grid[y][x] else "red"
         self._can.create_rectangle(x_norm, y_norm, x_norm + self._rect_size, y_norm + self._rect_size, fill=col)
 
-    def repaint(self):
-        self.counter += 1
+    def repaint(self, init=1):
+        self.counter += 1*init
         self.iter_label.configure(text=self.counter)
         self._can.delete("all")
         for y in range(self._height):
@@ -112,7 +124,15 @@ class UI:
                 self._can.create_rectangle(x_top, y_top, x_bot, y_bot, fill=col)
 
     def fps_changed(self):
-        self.fps = int(self.iters_per_second.get())
+        self.fps = int(self.fps_box.get())
+
+    def width_changed(self):
+        self._width = int(self.chosenWidth.get())
+        self.update()
+
+    def height_changed(self):
+        self._height = int(self.chosenHeight.get())
+        self.update()
 
     def retrieve_config(self):
         # config = pd.Configuration(self._width, 2, 1.1)

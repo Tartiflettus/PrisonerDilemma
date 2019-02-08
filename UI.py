@@ -82,11 +82,7 @@ class UI:
 
         # reinitialization button
         btn_reinit = tk.Button(self.controlsGrid, text="INIT", command=self.update, width=7)
-        btn_reinit.grid(row=5, columnspan=2, padx=5, pady=2)
-
-        # init grid with a line of 1s
-        btn_init_line = tk.Button(self.controlsGrid, text="LINE", command=self.init_line, width=7)
-        btn_init_line.grid(row=6, columnspan=2, padx=5, pady=2)
+        btn_reinit.grid(row=6, columnspan=2, padx=5, pady=2)
 
         # init the grid and create the canvas
         self._grid = [[0 for i in range(self._width)] for j in range(self._height)]
@@ -113,11 +109,6 @@ class UI:
         self.eca = pd.Configuration(self._width, 2, 1.1)
 
         self.counter = 0
-
-    def init_line(self):
-        for x in range(self._width):
-            self._grid[0][x] = 1
-        self.repaint(0)
 
     def paint(self, event):
         x = event.x // self._rect_size

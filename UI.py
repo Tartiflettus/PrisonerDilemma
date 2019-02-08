@@ -9,6 +9,7 @@ import PrisonerDilemma as pd
 import random
 
 
+# noinspection PyUnusedLocal
 class UI:
     # global var to hold the last painted rectangle
     lastRect = (-1, -1)
@@ -17,7 +18,7 @@ class UI:
     # global var for the play/pause button
     play = False
     # global var for the number of iterations in a second
-    fps = 1
+    fps = 10
 
     def __init__(self, width=100, height=10, rect_size=15):
         self._width = width
@@ -42,7 +43,7 @@ class UI:
 
         # left frame components
         self.controlsGrid = tk.Frame(self._panLeft)
-        self.controlsGrid.grid(row=0, column=0, sticky=tk.S+tk.W+tk.E+tk.N, padx=5, pady=5)
+        self.controlsGrid.grid(row=0, column=0, sticky=tk.S + tk.W + tk.E + tk.N, padx=5, pady=5)
 
         # next configuration button
         btn_next_config = tk.Button(self.controlsGrid, text="NEXT", command=self.next_config, width=7)
@@ -54,7 +55,8 @@ class UI:
 
         # choose iterations per second
         tk.Label(self.controlsGrid, text="Iterations/s").grid(row=1, column=1)
-        self.fps_box = tk.Spinbox(self.controlsGrid, from_=1, to_=6000, width=7, command=self.fps_changed)
+        self.fps_box = tk.Spinbox(self.controlsGrid, from_=1, to_=6000, width=7, command=self.fps_changed,
+                                  textvariable=tk.DoubleVar(value=self.fps))
         self.fps_box.grid(row=1, column=0)
 
         # iteration number
@@ -64,30 +66,34 @@ class UI:
 
         # choose width
         tk.Label(self.controlsGrid, text="Width").grid(row=3, column=0)
-        self.chosenWidth = tk.Spinbox(self.controlsGrid, from_=16, to_=1000, width=7, command=self.width_changed)
+        self.chosenWidth = tk.Spinbox(self.controlsGrid, from_=3, to_=1000, width=7, command=self.width_changed,
+                                      textvariable=tk.DoubleVar(value=self._width))
         self.chosenWidth.grid(row=3, column=1)
 
         # choose height
         tk.Label(self.controlsGrid, text="Width").grid(row=4, column=0)
-        self.chosenHeight = tk.Spinbox(self.controlsGrid, from_=10, to_=100, width=7, command=self.height_changed)
+        self.chosenHeight = tk.Spinbox(self.controlsGrid, from_=2, to_=100, width=7, command=self.height_changed,
+                                       textvariable=tk.DoubleVar(value=self._height))
         self.chosenHeight.grid(row=4, column=1)
 
         # choose collaborator percentage
-        tk.Label(self.controlsGrid, text="Collab percentage").grid(row=5, column=0)
-        self.chosenPercentage = tk.Spinbox(self.controlsGrid, from_=0, to_=100, width=7, command=self.percentage_changed)
+        tk.Label(self.controlsGrid, text="Collaborators %").grid(row=5, column=0)
+        self.chosenPercentage = tk.Spinbox(self.controlsGrid, from_=0, to_=100, width=7,
+                                           textvariable=tk.DoubleVar(value=50))
         self.chosenPercentage.grid(row=5, column=1)
 
         # init with the collaborator percentage
-        tk.Button(self.controlsGrid, text="init", command=self.init).grid(row=5, column=2)
+        tk.Button(self.controlsGrid, text="INIT", command=self.init).grid(row=5, column=2)
 
-        # reinitialization button
-        btn_reinit = tk.Button(self.controlsGrid, text="INIT", command=self.update, width=7)
+        # clear canvas button
+        btn_reinit = tk.Button(self.controlsGrid, text="CLEAR", command=self.update, width=7)
         btn_reinit.grid(row=6, columnspan=2, padx=5, pady=2)
 
         # init the grid and create the canvas
         self._grid = [[0 for i in range(self._width)] for j in range(self._height)]
         self._gridCanvas = [[0 for i in range(self._width)] for j in range(self._height)]
-        self._can = tk.Canvas(self._panRight, width=self._width*self._rect_size, height=self._height*self._rect_size)
+        self._can = tk.Canvas(self._panRight, width=self._width * self._rect_size,
+                              height=self._height * self._rect_size)
         self._can.pack()
         self.create_rectangles()
         self.repaint()
@@ -103,11 +109,10 @@ class UI:
             self.play_thread()
         self._grid = [[0 for i in range(self._width)] for j in range(self._height)]
         self._gridCanvas = [[0 for i in range(self._width)] for j in range(self._height)]
-        self._can.configure(width=self._width*self._rect_size, height=self._height*self._rect_size)
+        self._can.configure(width=self._width * self._rect_size, height=self._height * self._rect_size)
         self.create_rectangles()
         self.repaint(0)
         self.eca = pd.Configuration(self._width, 2, 1.1)
-
         self.counter = 0
 
     def paint(self, event):
@@ -130,7 +135,7 @@ class UI:
         self._can.itemconfig(self._gridCanvas[y][x], fill=col)
 
     def repaint(self, init=1):
-        self.counter += 1*init
+        self.counter += 1 * init
         self.iter_label.configure(text=self.counter)
         for y in range(self._height):
             for x in range(self._width):
@@ -176,7 +181,6 @@ class UI:
                 self._grid[y][x] = self._grid[y - 1][x]
 
     def next_config(self):
-        # print("next config")
         self.shift_grid_down()
 
         # add next config to the grid
@@ -184,13 +188,7 @@ class UI:
 
         self.repaint()
         if self.play:
-            self._win.after(1000//self.fps, self.next_config)
-
-    def update_thread(self):
-        return
-
-    def percentage_changed(self):
-        return
+            self._win.after(1000 // self.fps, self.next_config)
 
     def init(self):
         for x in range(self._width):

@@ -18,11 +18,12 @@ class UI:
     # global var for the number of iterations in a second
     fps = 1
 
-    def __init__(self, width=16, height=10, rect_size=15):
+    def __init__(self, width=100, height=10, rect_size=15):
         self._width = width
         self._height = height
         self._rect_size = rect_size
         self._grid = []
+        self._gridCanvas = []
         self._can = 0
 
         self.eca = pd.Configuration(width, 2, 1.1)
@@ -30,7 +31,6 @@ class UI:
         self._win = tk.Tk()
         self._win.title("Prisoner's Dilemma ECA")
         self._win.configure()
-        # self._win.pack(fill=tk.BOTH, expand=True)
 
         # paned frames
         self._panLeft = tk.Frame(self._win)
@@ -53,7 +53,7 @@ class UI:
 
         # choose iterations per second
         tk.Label(self.controlsGrid, text="Iterations/s").grid(row=1, column=1)
-        self.fps_box = tk.Spinbox(self.controlsGrid, from_=1, to_=100, width=7, command=self.fps_changed)
+        self.fps_box = tk.Spinbox(self.controlsGrid, from_=1, to_=6000, width=7, command=self.fps_changed)
         self.fps_box.grid(row=1, column=0)
 
         # iteration number
@@ -68,13 +68,23 @@ class UI:
 
         # choose height
         tk.Label(self.controlsGrid, text="Width").grid(row=4, column=0)
-        self.chosenHeight = tk.Spinbox(self.controlsGrid, from_=16, to_=1000, width=7, command=self.height_changed)
+        self.chosenHeight = tk.Spinbox(self.controlsGrid, from_=10, to_=100, width=7, command=self.height_changed)
         self.chosenHeight.grid(row=4, column=1)
+
+        # reinitialization button
+        btn_reinit = tk.Button(self.controlsGrid, text="INIT", command=self.update, width=7)
+        btn_reinit.grid(row=5, columnspan=2, padx=5, pady=2)
+
+        # init grid with a line of 1s
+        btn_init_line = tk.Button(self.controlsGrid, text="LINE", command=self.init_line, width=7)
+        btn_init_line.grid(row=6, columnspan=2, padx=5, pady=2)
 
         # init the grid and create the canvas
         self._grid = [[0 for i in range(self._width)] for j in range(self._height)]
+        self._gridCanvas = [[0 for i in range(self._width)] for j in range(self._height)]
         self._can = tk.Canvas(self._panRight, width=self._width*self._rect_size, height=self._height*self._rect_size)
         self._can.pack()
+        self.create_rectangles()
         self.repaint()
 
         # set mouse click to paint rect
@@ -84,17 +94,28 @@ class UI:
         self._win.mainloop()
 
     def update(self):
+        if self.play:
+            self.play_thread()
         self._grid = [[0 for i in range(self._width)] for j in range(self._height)]
+        self._gridCanvas = [[0 for i in range(self._width)] for j in range(self._height)]
         self._can.configure(width=self._width*self._rect_size, height=self._height*self._rect_size)
+        self.create_rectangles()
         self.repaint(0)
         self.eca = pd.Configuration(self._width, 2, 1.1)
+
+        self.counter = 0
+
+    def init_line(self):
+        for x in range(self._width):
+            self._grid[0][x] = 1
+        self.repaint(0)
 
     def paint(self, event):
         x = event.x // self._rect_size
         y = event.y // self._rect_size
 
         # check for index out of range
-        if x >= self._width or y >= self._height:
+        if x >= self._width or x < 0 or y >= self._height or y < 0:
             return
 
         # check for rect change and click event
@@ -104,15 +125,20 @@ class UI:
         # set current rect as last changed rect
         UI.lastRect = (x, y)
 
-        x_norm = x * self._rect_size
-        y_norm = y * self._rect_size
         self._grid[y][x] ^= 1
         col = "yellow" if self._grid[y][x] else "red"
-        self._can.create_rectangle(x_norm, y_norm, x_norm + self._rect_size, y_norm + self._rect_size, fill=col)
+        self._can.itemconfig(self._gridCanvas[y][x], fill=col)
 
     def repaint(self, init=1):
         self.counter += 1*init
         self.iter_label.configure(text=self.counter)
+        for y in range(self._height):
+            for x in range(self._width):
+                col = "yellow" if self._grid[y][x] else "red"
+                if self._can.itemcget(self._gridCanvas[y][x], "fill") != col:
+                    self._can.itemconfig(self._gridCanvas[y][x], fill=col)
+
+    def create_rectangles(self):
         self._can.delete("all")
         for y in range(self._height):
             for x in range(self._width):
@@ -121,7 +147,7 @@ class UI:
                 x_bot = x_top + self._rect_size
                 y_bot = y_top + self._rect_size
                 col = "yellow" if self._grid[y][x] else "red"
-                self._can.create_rectangle(x_top, y_top, x_bot, y_bot, fill=col)
+                self._gridCanvas[y][x] = self._can.create_rectangle(x_top, y_top, x_bot, y_bot, fill=col)
 
     def fps_changed(self):
         self.fps = int(self.fps_box.get())
@@ -135,9 +161,7 @@ class UI:
         self.update()
 
     def retrieve_config(self):
-        # config = pd.Configuration(self._width, 2, 1.1)
         for x in range(self._width):
-            # config.set_cell(x, self._grid[y][x])
             self.eca.set_cell(x, self._grid[0][x])
         return self.eca.next()
 

@@ -6,6 +6,7 @@ Created on Wed Jan 23 17:29:50 2019
 """
 import tkinter as tk
 import PrisonerDilemma as pd
+import random
 
 
 class UI:
@@ -70,6 +71,14 @@ class UI:
         tk.Label(self.controlsGrid, text="Width").grid(row=4, column=0)
         self.chosenHeight = tk.Spinbox(self.controlsGrid, from_=10, to_=100, width=7, command=self.height_changed)
         self.chosenHeight.grid(row=4, column=1)
+
+        # choose collaborator percentage
+        tk.Label(self.controlsGrid, text="Collab percentage").grid(row=5, column=0)
+        self.chosenPercentage = tk.Spinbox(self.controlsGrid, from_=0, to_=100, width=7, command=self.percentage_changed)
+        self.chosenPercentage.grid(row=5, column=1)
+
+        # init with the collaborator percentage
+        tk.Button(self.controlsGrid, text="init", command=self.init).grid(row=5, column=2)
 
         # reinitialization button
         btn_reinit = tk.Button(self.controlsGrid, text="INIT", command=self.update, width=7)
@@ -188,6 +197,18 @@ class UI:
 
     def update_thread(self):
         return
+
+    def percentage_changed(self):
+        return
+
+    def init(self):
+        for x in range(self._width):
+            sample = random.randint(0, 100)
+            if sample <= int(self.chosenPercentage.get()):
+                self._grid[0][x] = 1
+            else:
+                self._grid[0][x] = 0
+        self.repaint()
 
     def play_thread(self):
         self.play = not self.play

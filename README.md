@@ -13,7 +13,7 @@ Yellow is for collaborators
 Red is for traitors.
 The space is toric.
 
-## how to use
+## How to use
 You can edit the width, the height (time axis) of the grid.
 You can set a collaborator percentage at the start, and hit init.
 

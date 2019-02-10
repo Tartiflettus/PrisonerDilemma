@@ -20,7 +20,7 @@ class UI:
     # global var for the number of iterations in a second
     fps = 10
 
-    def __init__(self, width=100, height=10, rect_size=15):
+    def __init__(self, width=30, height=10, rect_size=15):
         self._width = width
         self._height = height
         self._rect_size = rect_size
@@ -28,7 +28,7 @@ class UI:
         self._gridCanvas = []
         self._can = 0
 
-        self.eca = pd.Configuration(width, 2, 1.1)
+        self.eca = pd.Configuration(width, 4, 1.1)
 
         self._win = tk.Tk()
         self._win.title("Prisoner's Dilemma ECA")
@@ -71,7 +71,7 @@ class UI:
         self.chosenWidth.grid(row=3, column=1)
 
         # choose height
-        tk.Label(self.controlsGrid, text="Width").grid(row=4, column=0)
+        tk.Label(self.controlsGrid, text="Height").grid(row=4, column=0)
         self.chosenHeight = tk.Spinbox(self.controlsGrid, from_=2, to_=100, width=7, command=self.height_changed,
                                        textvariable=tk.DoubleVar(value=self._height))
         self.chosenHeight.grid(row=4, column=1)
@@ -85,9 +85,15 @@ class UI:
         # init with the collaborator percentage
         tk.Button(self.controlsGrid, text="INIT", command=self.init).grid(row=5, column=2)
 
+        # temptation slider
+        tk.Label(self.controlsGrid, text="Temptation").grid(row=6, column=0)
+        self.chosenTemptation = tk.Spinbox(self.controlsGrid, from_=0, to_=100, textvariable=tk.DoubleVar(value=10),
+                                           command=self.temptationChanged)
+        self.chosenTemptation.grid(row=6, column=1)
+
         # clear canvas button
         btn_reinit = tk.Button(self.controlsGrid, text="CLEAR", command=self.update, width=7)
-        btn_reinit.grid(row=6, columnspan=2, padx=5, pady=2)
+        btn_reinit.grid(row=7, columnspan=2, padx=5, pady=2)
 
         # init the grid and create the canvas
         self._grid = [[0 for i in range(self._width)] for j in range(self._height)]
@@ -112,7 +118,7 @@ class UI:
         self._can.configure(width=self._width * self._rect_size, height=self._height * self._rect_size)
         self.create_rectangles()
         self.repaint(0)
-        self.eca = pd.Configuration(self._width, 2, 1.1)
+        self.eca = pd.Configuration(self._width, 4, 1. + self.chosenTemptation/100.)
         self.counter = 0
 
     def paint(self, event):
@@ -198,6 +204,9 @@ class UI:
             else:
                 self._grid[0][x] = 0
         self.repaint()
+
+    def temptationChanged(self):
+        self.update()
 
     def play_thread(self):
         self.play = not self.play
